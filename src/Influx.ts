@@ -1,5 +1,5 @@
 import { InfluxDB, WriteApi, Point } from '@influxdata/influxdb-client';
-import { PowerSummary, DetailUsagePower } from './AiSEG2';
+import { PowerSummary, DetailUsagePower, UsagePowerSummary } from './AiSEG2';
 
 export class Influx {
   private readonly writeClient: WriteApi;
@@ -10,7 +10,7 @@ export class Influx {
     this.writeClient = client.getWriteApi(orgName, bucketName, 'ns');
   }
 
-  public writePower(powerSummary: PowerSummary, detailsUsagePower: DetailUsagePower) {
+  public writePower(powerSummary: PowerSummary, detailsUsagePower: DetailUsagePower, usagePowerSummary: UsagePowerSummary) {
     const totalGenerationPowerPoint = new Point('power')
       .tag('summary', powerSummary.totalGenerationPowerKW.name)
       .floatField('value', powerSummary.totalGenerationPowerKW.value);
@@ -20,10 +20,32 @@ export class Influx {
     const totalBalancePowerPoint = new Point('power')
       .tag('summary', powerSummary.totalBalancePowerKW.name)
       .floatField('value', powerSummary.totalBalancePowerKW.value);
+    const totalPurchasedPowerPoint = new Point('power')
+      .tag('summary', powerSummary.totalPurchasedPowerKW.name)
+      .floatField('value', powerSummary.totalPurchasedPowerKW.value);
 
     this.writeClient.writePoint(totalGenerationPowerPoint);
     this.writeClient.writePoint(totalUsagePowerPoint);
     this.writeClient.writePoint(totalBalancePowerPoint);
+    this.writeClient.writePoint(totalPurchasedPowerPoint);
+
+    const totalGenerationPowerKWhPoint = new Point('power')
+      .tag('summary', usagePowerSummary.totalGenerationPowerKWh.name)
+      .floatField('value', usagePowerSummary.totalGenerationPowerKWh.value);
+    const totalSoldPowerKWhPoint = new Point('power')
+      .tag('summary', usagePowerSummary.totalSoldPowerKWh.name)
+      .floatField('value', usagePowerSummary.totalSoldPowerKWh.value);
+    const totalPurchasedPowerKWhPoint = new Point('power')
+      .tag('summary', usagePowerSummary.totalPurchasedPowerKWh.name)
+      .floatField('value', usagePowerSummary.totalPurchasedPowerKWh.value);
+    const totalUsagePowerKWhPoint = new Point('power')
+      .tag('summary', usagePowerSummary.totalUsagePowerKWh.name)
+      .floatField('value', usagePowerSummary.totalUsagePowerKWh.value);
+
+    this.writeClient.writePoint(totalGenerationPowerKWhPoint);
+    this.writeClient.writePoint(totalSoldPowerKWhPoint);
+    this.writeClient.writePoint(totalPurchasedPowerKWhPoint);
+    this.writeClient.writePoint(totalUsagePowerKWhPoint);
 
     powerSummary.detailsGenerationPower.forEach((item) => {
       const itemPoint = new Point('power')

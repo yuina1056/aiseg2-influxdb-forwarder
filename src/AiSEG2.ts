@@ -6,9 +6,17 @@ export type PowerSummary = {
   totalUsagePowerKW: MetricsElement;
   totalBalancePowerKW: MetricsElement;
   detailsGenerationPower: MetricsElement[];
+  totalPurchasedPowerKW: MetricsElement;
 };
 
 export type DetailUsagePower = MetricsElement[];
+
+export type UsagePowerSummary = {
+  totalGenerationPowerKWh: MetricsElement;
+  totalSoldPowerKWh: MetricsElement;
+  totalPurchasedPowerKWh: MetricsElement;
+  totalUsagePowerKWh: MetricsElement;
+}
 
 type MetricsElement = {
   name: string;
@@ -65,6 +73,10 @@ export class AiSEG2 {
       name: '売買電力(kW)',
       value: totalGenerationPowerKW.value - totalUsagePowerKW.value,
     };
+    const totalPurchasedPowerKW: MetricsElement = {
+      name: '買電力(kW)',
+      value: (totalUsagePowerKW.value - totalGenerationPowerKW.value) > 0 ? totalUsagePowerKW.value - totalGenerationPowerKW.value : 0,
+    }
 
     const detailsGenerationPower: MetricsElement[] = [];
 
@@ -85,6 +97,7 @@ export class AiSEG2 {
       totalUsagePowerKW,
       totalBalancePowerKW,
       detailsGenerationPower,
+      totalPurchasedPowerKW,
     };
   }
 
@@ -132,6 +145,71 @@ export class AiSEG2 {
     } while (pageCount <= maxCount);
 
     return usagePowerItems;
+  }
+
+  async getUsagePowerSummary(): Promise<UsagePowerSummary> {
+    // 発電量
+    let response = await this.client.fetch(
+      `${this.useHTTPS ? 'https' : 'http'}://${this.host}/page/graph/51111`,
+    );
+    let body = await response.text();
+
+    let dom = await new JSDOM(body);
+    let document = dom.window.document;
+
+    const totalGenerationPowerKWh: MetricsElement = {
+      name: '総発電電力(kWh)',
+      value: this.getNumericValue(document.getElementById('val_kwh')?.textContent),
+    };
+
+    // 売電量
+    response = await this.client.fetch(
+      `${this.useHTTPS ? 'https' : 'http'}://${this.host}/page/graph/54111`,
+    );
+    body = await response.text();
+
+    dom = await new JSDOM(body);
+    document = dom.window.document;
+
+    const totalSoldPowerKWh: MetricsElement = {
+      name: '売電量(kWh)',
+      value: this.getNumericValue(document.getElementById('val_kwh')?.textContent),
+    };
+
+    // 買電量
+    response = await this.client.fetch(
+      `${this.useHTTPS ? 'https' : 'http'}://${this.host}/page/graph/53111`,
+    );
+    body = await response.text();
+
+    dom = await new JSDOM(body);
+    document = dom.window.document;
+
+    const totalPurchasedPowerKWh: MetricsElement = {
+      name: '買電量(kWh)',
+      value: this.getNumericValue(document.getElementById('val_kwh')?.textContent),
+    };
+
+    // 使用電力量
+    response = await this.client.fetch(
+      `${this.useHTTPS ? 'https' : 'http'}://${this.host}/page/graph/52111`,
+    );
+    body = await response.text();
+
+    dom = await new JSDOM(body);
+    document = dom.window.document;
+
+    const totalUsagePowerKWh: MetricsElement = {
+      name: '総消費電力(kWh)',
+      value: this.getNumericValue(document.getElementById('val_kwh')?.textContent),
+    };
+
+    return {
+      totalGenerationPowerKWh,
+      totalSoldPowerKWh,
+      totalPurchasedPowerKWh,
+      totalUsagePowerKWh,
+    };
   }
 }
 

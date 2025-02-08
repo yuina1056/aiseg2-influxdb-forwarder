@@ -35,6 +35,9 @@ async function run() {
     const detailsUsagePower = await aiseg2.getDetailsUsagePower();
     console.log(now.format('YYYY-MM-DD HH:mm:ss'), 'detailsUsagePower', detailsUsagePower);
 
+    const usagePowerSummary = await aiseg2.getUsagePowerSummary();
+    console.log(now.format('YYYY-MM-DD HH:mm:ss'), 'UsagePowerSummary', usagePowerSummary);
+
     // influxdb へデータを送信
     const influx = new Influx(
       influxdbHost,
@@ -43,7 +46,7 @@ async function run() {
       influxdbBucket,
       influxdbUseHTTPS,
     );
-    influx.writePower(powerSummary, detailsUsagePower);
+    influx.writePower(powerSummary, detailsUsagePower, usagePowerSummary);
   }
 
   async function interval(microSeconds: number) {
