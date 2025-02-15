@@ -57,7 +57,7 @@ async function run() {
   }
 
   //await main();
-  await interval(5000);
+  await interval(30000);
 }
 
 run();
