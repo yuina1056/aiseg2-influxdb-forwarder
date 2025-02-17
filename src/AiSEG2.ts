@@ -211,7 +211,51 @@ export class AiSEG2 {
       totalUsagePowerKWh,
     };
   }
+
+  async getDetailsUsagePowerSummary(): Promise<DetailUsagePower> {
+
+    const usagePowerSummaryItems: MetricsElement[] = [];
+    const url = `http://${this.host}/page/setting/installation/734`;
+    const response = await this.client.fetch(url);
+    const body = await response.text();
+
+    const dom = new JSDOM(body);
+    const document = dom.window.document;
+
+    const scriptElements = Array.from(document.querySelectorAll('script')).filter(script =>
+      script.textContent?.includes('window.onload')
+    );
+
+    for (const element of scriptElements) {
+      const scriptContent = element.textContent || '';
+      const index = scriptContent.indexOf('(') + 1;
+      const rindex = scriptContent.lastIndexOf(')');
+      const jsonText = scriptContent.substring(index, rindex);
+      const jsonDict = JSON.parse(jsonText);
+
+      for (const circuit of jsonDict['arrayCircuitNameList']) {
+        if (circuit['strBtnType'] === "1") {
+          const paramsDict = { circuitid: circuit['strId'] };
+          const encodedParams = Buffer.from(JSON.stringify(paramsDict)).toString('base64');
+          const circuitUrl = `http://${this.host}/page/graph/584?data=${encodedParams}`;
+          const circuitResponse = await this.client.fetch(circuitUrl);
+          const circuitBody = await circuitResponse.text();
+
+          const circuitDom = new JSDOM(circuitBody);
+          const circuitDocument = circuitDom.window.document;
+
+          usagePowerSummaryItems.push({
+            name: `${circuit['strCircuit']}(kWh)`,
+            value: this.getNumericValue(circuitDocument.querySelector('#val_kwh')?.textContent),
+          });
+        }
+      }
+    }
+
+    return usagePowerSummaryItems;
+  }
 }
+
 
 class AiSEG2Error extends Error {
   static {
