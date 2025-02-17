@@ -53,7 +53,7 @@ async function run() {
       influxdbBucket,
       influxdbUseHTTPS,
     );
-    influx.writePower(powerSummary, detailsUsagePower, usagePowerSummary);
+    influx.writePower(powerSummary, detailsUsagePower, usagePowerSummary, detailsUsasePowerSummary);
   }
 
   async function interval(microSeconds: number) {
@@ -63,7 +63,7 @@ async function run() {
     }
   }
 
-  //await main();
+  // await main();
   await interval(30000);
 }
 

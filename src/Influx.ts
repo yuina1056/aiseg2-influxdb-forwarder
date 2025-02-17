@@ -1,5 +1,5 @@
 import { InfluxDB, WriteApi, Point } from '@influxdata/influxdb-client';
-import { PowerSummary, DetailUsagePower, UsagePowerSummary } from './AiSEG2';
+import { PowerSummary, DetailUsagePower, UsagePowerSummary, DetailUsagePowerSummary } from './AiSEG2';
 
 export class Influx {
   private readonly writeClient: WriteApi;
@@ -10,7 +10,7 @@ export class Influx {
     this.writeClient = client.getWriteApi(orgName, bucketName, 'ns');
   }
 
-  public writePower(powerSummary: PowerSummary, detailsUsagePower: DetailUsagePower, usagePowerSummary: UsagePowerSummary) {
+  public writePower(powerSummary: PowerSummary, detailsUsagePower: DetailUsagePower, usagePowerSummary: UsagePowerSummary, detailsUsagePowerSummary: DetailUsagePowerSummary) {
     const totalGenerationPowerPoint = new Point('power')
       .tag('summary', powerSummary.totalGenerationPowerKW.name)
       .floatField('value', powerSummary.totalGenerationPowerKW.value);
@@ -58,6 +58,14 @@ export class Influx {
     detailsUsagePower.forEach((item) => {
       const itemPoint = new Point('power')
         .tag('detail-type', 'usage')
+        .tag('detail-section', item.name)
+        .floatField('value', item.value);
+      this.writeClient.writePoint(itemPoint);
+    });
+
+    detailsUsagePowerSummary.forEach((item) => {
+      const itemPoint = new Point('power')
+        .tag('detail-type', 'usage-summary')
         .tag('detail-section', item.name)
         .floatField('value', item.value);
       this.writeClient.writePoint(itemPoint);
