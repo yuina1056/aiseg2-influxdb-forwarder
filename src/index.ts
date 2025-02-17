@@ -29,27 +29,31 @@ async function run() {
     // AiSEG2 からデータを取得
     const aiseg2 = new AiSEG2(aiseg2Host, aiseg2User, aiseg2Password, aiseg2UseHTTPS);
 
-    // const powerSummary = await aiseg2.getPowerSummary();
-    // console.log(now.format('YYYY-MM-DD HH:mm:ss'), 'powerSummary', powerSummary);
+    const powerSummary = await aiseg2.getPowerSummary();
+    console.log(now.format('YYYY-MM-DD HH:mm:ss'), 'powerSummary', powerSummary);
 
-    // const detailsUsagePower = await aiseg2.getDetailsUsagePower();
-    // console.log(now.format('YYYY-MM-DD HH:mm:ss'), 'detailsUsagePower', detailsUsagePower);
+    const detailsUsagePower = await aiseg2.getDetailsUsagePower();
+    console.log(now.format('YYYY-MM-DD HH:mm:ss'), 'detailsUsagePower', detailsUsagePower);
 
-    // const usagePowerSummary = await aiseg2.getUsagePowerSummary();
-    // console.log(now.format('YYYY-MM-DD HH:mm:ss'), 'UsagePowerSummary', usagePowerSummary);
+    const usagePowerSummary = await aiseg2.getUsagePowerSummary();
+    console.log(now.format('YYYY-MM-DD HH:mm:ss'), 'UsagePowerSummary', usagePowerSummary);
 
     const detailsUsasePowerSummary = await aiseg2.getDetailsUsagePowerSummary();
-    console.log(now.format('YYYY-MM-DD HH:mm:ss'), 'DetailsUsagePowerSummary', detailsUsasePowerSummary);
+    console.log(
+      now.format('YYYY-MM-DD HH:mm:ss'),
+      'DetailsUsagePowerSummary',
+      detailsUsasePowerSummary,
+    );
 
     // influxdb へデータを送信
-    // const influx = new Influx(
-    //   influxdbHost,
-    //   influxdbToken,
-    //   influxdbOrg,
-    //   influxdbBucket,
-    //   influxdbUseHTTPS,
-    // );
-    // influx.writePower(powerSummary, detailsUsagePower, usagePowerSummary);
+    const influx = new Influx(
+      influxdbHost,
+      influxdbToken,
+      influxdbOrg,
+      influxdbBucket,
+      influxdbUseHTTPS,
+    );
+    influx.writePower(powerSummary, detailsUsagePower, usagePowerSummary);
   }
 
   async function interval(microSeconds: number) {
@@ -59,8 +63,8 @@ async function run() {
     }
   }
 
-  await main();
-  // await interval(30000);
+  //await main();
+  await interval(30000);
 }
 
 run();

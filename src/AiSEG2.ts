@@ -18,6 +18,8 @@ export type UsagePowerSummary = {
   totalUsagePowerKWh: MetricsElement;
 };
 
+export type DetailUsagePowerSummary = MetricsElement[];
+
 type MetricsElement = {
   name: string;
   value: number;
@@ -215,7 +217,7 @@ export class AiSEG2 {
     };
   }
 
-  async getDetailsUsagePowerSummary(): Promise<DetailUsagePower> {
+  async getDetailsUsagePowerSummary(): Promise<DetailUsagePowerSummary> {
     const usagePowerSummaryItems: MetricsElement[] = [];
     const response = await this.client.fetch(
       `${this.useHTTPS ? 'https' : 'http'}://${this.host}/page/setting/installation/734`,
